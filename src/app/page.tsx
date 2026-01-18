@@ -1,37 +1,30 @@
-"use client";
-import { useTheme } from "next-themes";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useMutation, useQuery } from "convex/react"
+import { api } from "../../convex/_generated/api"
+import { Button } from "@/components/ui/button"
+import { create } from "domain"
 
 const page = () => {
-  const { setTheme } = useTheme();
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          Sun Moon
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
+  const projects = useQuery(api.projects.get)
+  const createProject = useMutation(api.projects.create)
 
-export default page;
+  return (
+    <div className="flex flex-col p-4 ">
+      <Button onClick={() => createProject({ name: "New Project" })}>
+        Add Project
+      </Button>
+      {projects?.map((project) => (
+        <div
+          key={project._id.toString()}
+          className="border flex flex-col justify-center items-center gap-2 p-4 mb-4"
+        >
+          <p>{project.name}</p>
+          <p>Owner ID: {project.ownerId}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default page
