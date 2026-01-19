@@ -1,8 +1,11 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import React, { useState } from "react"
+import * as Sentry from "@sentry/nextjs"
+import { useAuth } from "@clerk/nextjs"
 
 const demoPage = () => {
+  const { userId } = useAuth()
   const [loading, setLoading] = useState(false)
 
   const handleBlocking = async () => {
@@ -24,6 +27,20 @@ const demoPage = () => {
     }
   }
 
+  const handleClientError = () => {
+    Sentry.logger.info(
+      "About to throw a client-side error for testing Sentry",
+      { userId },
+    )
+    throw new Error("This is a client-side error for testing Sentry!")
+  }
+  const handleApiError = async () => {
+    await fetch("/api/demo/error", { method: "POST" })
+  }
+  const handleInngestError = async () => {
+    await fetch("/api/demo/inngest-error", { method: "POST" })
+  }
+
   return (
     <div className="p-8 space-x-4">
       <Button disabled={loading} onClick={handleBlocking}>
@@ -31,6 +48,27 @@ const demoPage = () => {
       </Button>
       <Button disabled={loading} onClick={handleBackground}>
         {loading ? "Loading..." : "Background"}
+      </Button>
+      <Button
+        disabled={loading}
+        onClick={handleClientError}
+        variant={"destructive"}
+      >
+        Client
+      </Button>
+      <Button
+        disabled={loading}
+        onClick={handleApiError}
+        variant={"destructive"}
+      >
+        API
+      </Button>
+      <Button
+        disabled={loading}
+        onClick={handleInngestError}
+        variant={"destructive"}
+      >
+        Inngest
       </Button>
     </div>
   )
