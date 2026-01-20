@@ -1,0 +1,75 @@
+import { useRouter } from "next/navigation"
+import { useProjects } from "../hooks/use-projects"
+import { Doc } from "../../../../convex/_generated/dataModel"
+import { FaGithub } from "react-icons/fa"
+import { AlertCircleIcon, GlobeIcon, Loader2Icon } from "lucide-react"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+
+interface ProjectsCommandDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+const getProjectIcon = (project: Doc<"projects">) => {
+  if (project.importStatus === "completed") {
+    return <FaGithub className="size-4 text-muted-foreground" />
+  }
+  if (project.importStatus === "failed") {
+    return <AlertCircleIcon className="size-4 text-muted-foreground" />
+  }
+  if (project.importStatus === "importing") {
+    return <Loader2Icon className="size-4 text-muted-foreground animate-spin" />
+  }
+
+  return <GlobeIcon className="size-4 text-muted-foreground" />
+}
+
+const ProjectsCommandDialog = ({
+  open,
+  onOpenChange,
+}: ProjectsCommandDialogProps) => {
+  const router = useRouter()
+  const projects = useProjects()
+
+  const handleSelect = (projectId: string) => {
+    router.push(`/projects/${projectId}`)
+    onOpenChange(false)
+  }
+
+  return (
+    <CommandDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Search Project"
+      description="Search and navigate to your projects"
+    >
+      <CommandInput placeholder="Search a project name..." />
+      <CommandList>
+        <CommandEmpty>No Projects Found</CommandEmpty>
+        <CommandGroup heading="Projects">
+          {projects?.map((project) => (
+            <CommandItem
+              key={project._id}
+              value={`${project.name}-${project._id}`}
+              onSelect={handleSelect}
+            >
+              <div className="flex items-center gap-2">
+                {getProjectIcon(project)}
+                <span>{project.name}</span>
+              </div>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
+  )
+}
+
+export default ProjectsCommandDialog
